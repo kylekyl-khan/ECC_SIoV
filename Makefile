@@ -1,22 +1,27 @@
-# Makefile at project root
-CC       := gcc
-CFLAGS   := -O2 -Wall -Wextra
-LDFLAGS  := -lpbc -lgmp
-TARGET   := bin/siov
-SRC      := src/siov.c
+CC ?= gcc
+CFLAGS = -Wall -Wextra -O2 -g -std=c99
+SRC = $(wildcard src/*.c)
+OBJ = $(SRC:.c=.o)
+BIN = bin/siov
 
-.PHONY: all clean run
+MIRACL_CORE_DIR ?= third_party/miracl-core/c
+MIRACL_INCLUDE = -I$(MIRACL_CORE_DIR)/include
+MIRACL_LIB ?= $(MIRACL_CORE_DIR)/lib/libcore.a
 
-all: $(TARGET)
+INCLUDES = -Iinclude $(MIRACL_INCLUDE)
+
+all: $(BIN)
+
+$(BIN): $(OBJ) | bin
+	$(CC) $(CFLAGS) -o $@ $(OBJ) $(MIRACL_LIB)
 
 bin:
 	mkdir -p bin
 
-$(TARGET): bin $(SRC)
-	$(CC) $(CFLAGS) $(SRC) -o $(TARGET) $(LDFLAGS)
+%.o: %.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm -rf bin
+	rm -f $(OBJ) $(BIN)
 
-run: all
-	./bin/siov --count 3 --message-size 64 --verify on --trace off
+.PHONY: all clean
