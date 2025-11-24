@@ -18,12 +18,12 @@ typedef struct siov_scalar {
 
 typedef struct siov_g1_point {
     /* ECP_BN254 serialization. */
-    uint8_t bytes[64];
+    uint8_t bytes[65];
 } siov_g1_t;
 
 typedef struct siov_g2_point {
     /* ECP2_BN254 serialization. */
-    uint8_t bytes[128];
+    uint8_t bytes[129];
 } siov_g2_t;
 
 typedef struct siov_gt_elem {

@@ -57,9 +57,9 @@ int siov_extract(siov_user_secret_t *usr, const siov_params_t *params, const uin
 int siov_sign(siov_signature_t *sig, const siov_params_t *params, const siov_user_secret_t *usr,
               const uint8_t *msg, size_t msg_len, const uint8_t *ts, size_t ts_len) {
     memset(sig, 0, sizeof(*sig));
-    siov_scalar_t r, k, t, h_td, rk, th, rt;
+    siov_scalar_t r, t, h_td, th, rt;
 
-    if (random_scalar_nonzero(&r) != 0 || random_scalar_nonzero(&k) != 0 || random_scalar_nonzero(&t) != 0) {
+    if (random_scalar_nonzero(&r) != 0 || random_scalar_nonzero(&t) != 0) {
         return -1;
     }
 
@@ -76,12 +76,11 @@ int siov_sign(siov_signature_t *sig, const siov_params_t *params, const siov_use
     siov_scalar_mul(&rt, &r, &t);
     siov_g1_mul(&sig->sigma3, &usr->pk_g1, &rt);
 
-    /* sigma2 = (r k) P + (t h_td) PPr_AD1 */
-    siov_scalar_mul(&rk, &r, &k);
+    /* sigma2 = r P + (t h_td) PPr_AD1 */
     siov_scalar_mul(&th, &t, &h_td);
 
     siov_g1_t term1, term2;
-    siov_g1_mul(&term1, &params->g1_generator, &rk);
+    siov_g1_mul(&term1, &params->g1_generator, &r);
     siov_g1_mul(&term2, &ppr_ad1, &th);
     siov_g1_add(&sig->sigma2, &term1, &term2);
 
