@@ -18,12 +18,12 @@ typedef struct siov_scalar {
 
 typedef struct siov_g1_point {
     /* ECP_BN254 serialization. */
-    uint8_t bytes[65];
+    uint8_t bytes[64];
 } siov_g1_t;
 
 typedef struct siov_g2_point {
     /* ECP2_BN254 serialization. */
-    uint8_t bytes[129];
+    uint8_t bytes[128];
 } siov_g2_t;
 
 typedef struct siov_gt_elem {
@@ -38,19 +38,11 @@ void siov_miracl_cleanup(void);
 /* Scalar and point operations */
 int siov_scalar_random(siov_scalar_t *x);
 int siov_scalar_from_hash(siov_scalar_t *x, const uint8_t *msg, size_t msg_len);
-int siov_scalar_mul(siov_scalar_t *out, const siov_scalar_t *a, const siov_scalar_t *b);
-int siov_scalar_add(siov_scalar_t *out, const siov_scalar_t *a, const siov_scalar_t *b);
-int siov_scalar_is_zero(const siov_scalar_t *x);
 int siov_g1_generator(siov_g1_t *g1);
 int siov_g2_generator(siov_g2_t *g2);
 int siov_g1_mul(siov_g1_t *out, const siov_g1_t *p, const siov_scalar_t *x);
 int siov_g2_mul(siov_g2_t *out, const siov_g2_t *p, const siov_scalar_t *x);
-int siov_g1_add(siov_g1_t *out, const siov_g1_t *a, const siov_g1_t *b);
-int siov_g1_zero(siov_g1_t *out);
 int siov_pairing(siov_gt_t *out, const siov_g1_t *p, const siov_g2_t *q);
-int siov_gt_mul(siov_gt_t *out, const siov_gt_t *a, const siov_gt_t *b);
-int siov_gt_pow(siov_gt_t *out, const siov_gt_t *a, const siov_scalar_t *x);
-int siov_gt_one(siov_gt_t *out);
 int siov_gt_is_equal(const siov_gt_t *a, const siov_gt_t *b);
 int siov_gt_is_one(const siov_gt_t *a);
 

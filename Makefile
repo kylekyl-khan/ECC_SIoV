@@ -1,19 +1,13 @@
-CC ?= gcc
-CFLAGS = -Wall -Wextra -O2 -g -std=c99 -D_POSIX_C_SOURCE=200809L
-SRC = $(wildcard src/*.c)
-OBJ = $(SRC:.c=.o)
-BIN = bin/siov
+# Makefile at project root
+CC       := gcc
+CFLAGS   := -O2 -Wall -Wextra
+LDFLAGS  := -lpbc -lgmp
+TARGET   := bin/siov
+SRC      := src/siov.c
 
-MIRACL_CORE_DIR ?= third_party/miracl-core/c
-MIRACL_INCLUDE = -I$(MIRACL_CORE_DIR)/include
-MIRACL_LIB ?= $(MIRACL_CORE_DIR)/lib/libcore.a
+.PHONY: all clean run
 
-INCLUDES = -Iinclude $(MIRACL_INCLUDE)
-
-all: $(BIN)
-
-$(BIN): $(OBJ) | bin
-	$(CC) $(CFLAGS) -o $@ $(OBJ) $(MIRACL_LIB)
+all: $(TARGET)
 
 bin:
 	mkdir -p bin

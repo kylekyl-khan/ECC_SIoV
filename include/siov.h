@@ -8,26 +8,26 @@
 /* High-level SIOV protocol structures. */
 typedef struct {
     siov_scalar_t master_secret; /* s */
+    siov_scalar_t master_trapdoor; /* x */
     siov_g1_t g1_generator; /* P */
-    siov_g2_t g2_generator; /* P2 */
-    siov_g1_t pub_g1; /* Q = sP */
-    siov_g2_t pub_g2; /* Q2 = sP2 */
-    siov_gt_t pairing_generator; /* g = e(P, P2) */
+    siov_g2_t g2_generator; /* Q */
+    siov_g2_t pub_trapdoor; /* x*Q */
+    siov_gt_t pairing_generator; /* e(P,Q) */
 } siov_params_t;
 
 typedef struct {
-    uint8_t vad[64];
-    size_t vad_len;
-    siov_scalar_t h_vad; /* H_vad(VAD) */
-    siov_g1_t pk_g1; /* PK = h_vad * P */
-    siov_g2_t pk_g2; /* PK2 = h_vad * P2 */
-    siov_g1_t sk;    /* SK = s * PK */
+    siov_g1_t aid; /* hash of identity */
+    siov_g1_t sk;  /* s * AID */
+    siov_g2_t pk;  /* x * SK (in G2 for demo) */
 } siov_user_secret_t;
 
 typedef struct {
-    siov_gt_t sigma1; /* g^r */
-    siov_g1_t sigma2; /* (r k)P + (t h_td) PPr_AD1 */
-    siov_g1_t sigma3; /* r t PK */
+    siov_g1_t U;
+    siov_gt_t alpha;
+    siov_g1_t beta;
+    siov_g1_t gamma;
+    siov_g1_t C1;
+    siov_g1_t C2;
 } siov_signature_t;
 
 typedef struct {

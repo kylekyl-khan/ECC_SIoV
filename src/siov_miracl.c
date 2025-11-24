@@ -96,33 +96,6 @@ int siov_scalar_from_hash(siov_scalar_t *x, const uint8_t *msg, size_t msg_len) 
     return 0;
 }
 
-int siov_scalar_mul(siov_scalar_t *out, const siov_scalar_t *a, const siov_scalar_t *b) {
-    BIG_256_56 x, y, order, z;
-    scalar_load(x, a);
-    scalar_load(y, b);
-    BIG_256_56_rcopy(order, CURVE_Order_BN254);
-    BIG_256_56_modmul(z, x, y, order);
-    scalar_store(out, z);
-    return 0;
-}
-
-int siov_scalar_add(siov_scalar_t *out, const siov_scalar_t *a, const siov_scalar_t *b) {
-    BIG_256_56 x, y, order;
-    scalar_load(x, a);
-    scalar_load(y, b);
-    BIG_256_56_rcopy(order, CURVE_Order_BN254);
-    BIG_256_56_add(x, x, y);
-    BIG_256_56_mod(x, order);
-    scalar_store(out, x);
-    return 0;
-}
-
-int siov_scalar_is_zero(const siov_scalar_t *x) {
-    BIG_256_56 v;
-    scalar_load(v, x);
-    return BIG_256_56_iszilch(v);
-}
-
 int siov_g1_generator(siov_g1_t *g1) {
     ECP_BN254 p;
     ECP_BN254_generator(&p);
@@ -157,22 +130,6 @@ int siov_g2_mul(siov_g2_t *out, const siov_g2_t *p, const siov_scalar_t *x) {
     return 0;
 }
 
-int siov_g1_add(siov_g1_t *out, const siov_g1_t *a, const siov_g1_t *b) {
-    ECP_BN254 pa, pb;
-    if (!g1_load(&pa, a)) return -1;
-    if (!g1_load(&pb, b)) return -1;
-    ECP_BN254_add(&pa, &pb);
-    g1_store(out, &pa);
-    return 0;
-}
-
-int siov_g1_zero(siov_g1_t *out) {
-    ECP_BN254 p;
-    ECP_BN254_inf(&p);
-    g1_store(out, &p);
-    return 0;
-}
-
 int siov_pairing(siov_gt_t *out, const siov_g1_t *p, const siov_g2_t *q) {
     ECP_BN254 g1;
     ECP2_BN254 g2;
@@ -181,31 +138,6 @@ int siov_pairing(siov_gt_t *out, const siov_g1_t *p, const siov_g2_t *q) {
     FP12_BN254 gt;
     PAIR_BN254_ate(&gt, &g2, &g1);
     PAIR_BN254_fexp(&gt);
-    gt_store(out, &gt);
-    return 0;
-}
-
-int siov_gt_mul(siov_gt_t *out, const siov_gt_t *a, const siov_gt_t *b) {
-    FP12_BN254 x, y;
-    if (!gt_load(&x, a) || !gt_load(&y, b)) return -1;
-    FP12_BN254_mul(&x, &y);
-    gt_store(out, &x);
-    return 0;
-}
-
-int siov_gt_pow(siov_gt_t *out, const siov_gt_t *a, const siov_scalar_t *x) {
-    FP12_BN254 gt;
-    BIG_256_56 k;
-    if (!gt_load(&gt, a)) return -1;
-    scalar_load(k, x);
-    FP12_BN254_pow(&gt, &gt, k);
-    gt_store(out, &gt);
-    return 0;
-}
-
-int siov_gt_one(siov_gt_t *out) {
-    FP12_BN254 gt;
-    FP12_BN254_one(&gt);
     gt_store(out, &gt);
     return 0;
 }
