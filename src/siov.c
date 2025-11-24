@@ -101,3 +101,76 @@ int siov_decrypt(uint8_t *out, size_t out_len, const siov_ciphertext_t *ct,
     (void)usr;
     return 0;
 }
+
+int siov_verify(const siov_signature_t *sig, const siov_params_t *params,
+               const uint8_t *msg, size_t msg_len, const uint8_t *ts, size_t ts_len) {
+    siov_scalar_t h_td;
+    hash_td(&h_td, msg, msg_len, ts, ts_len);
+
+    /* Q2_h = h_td * Q2 */
+    siov_g2_t q2_h;
+    siov_g2_mul(&q2_h, &params->pub_g2, &h_td);
+
+    siov_gt_t lhs, rhs_pair, rhs;
+    siov_pairing(&lhs, &sig->sigma2, &params->g2_generator);
+    siov_pairing(&rhs_pair, &sig->sigma3, &q2_h);
+    siov_gt_mul(&rhs, &sig->sigma1, &rhs_pair);
+
+    return siov_gt_is_equal(&lhs, &rhs);
+}
+
+int siov_verify_batch(const siov_signature_t *sigs, const siov_params_t *params,
+                     const uint8_t **msgs, const size_t *msg_lens,
+                     const uint8_t **tss, const size_t *ts_lens, size_t n) {
+    siov_g1_t S2, S3;
+    siov_gt_t Gbeta;
+    siov_g1_zero(&S2);
+    siov_g1_zero(&S3);
+    siov_gt_one(&Gbeta);
+
+    for (size_t i = 0; i < n; i++) {
+        siov_scalar_t beta_i, h_i, beta_hi;
+        if (random_scalar_nonzero(&beta_i) != 0) return 0;
+        hash_td(&h_i, msgs[i], msg_lens[i], tss[i], ts_lens[i]);
+        siov_scalar_mul(&beta_hi, &beta_i, &h_i);
+
+        siov_g1_t tmp;
+        siov_g1_mul(&tmp, &sigs[i].sigma2, &beta_i);
+        siov_g1_add(&S2, &S2, &tmp);
+
+        siov_g1_mul(&tmp, &sigs[i].sigma3, &beta_hi);
+        siov_g1_add(&S3, &S3, &tmp);
+
+        siov_gt_t sigma1_beta;
+        siov_gt_pow(&sigma1_beta, &sigs[i].sigma1, &beta_i);
+        siov_gt_mul(&Gbeta, &Gbeta, &sigma1_beta);
+    }
+
+    siov_gt_t lhs, rhs_pair, rhs;
+    siov_pairing(&lhs, &S2, &params->g2_generator);
+    siov_pairing(&rhs_pair, &S3, &params->pub_g2);
+    siov_gt_mul(&rhs, &Gbeta, &rhs_pair);
+
+    return siov_gt_is_equal(&lhs, &rhs);
+}
+
+int siov_encrypt(siov_ciphertext_t *ct, const siov_params_t *params,
+                const siov_g1_t *identity_hash,
+                const uint8_t *msg, size_t msg_len) {
+    (void)msg; (void)msg_len;
+    siov_scalar_t r;
+    random_scalar_nonzero(&r);
+    siov_g1_mul(&ct->C1, &params->g1_generator, &r);
+    siov_pairing(&ct->C2, identity_hash, &params->pub_g2);
+    return 0;
+}
+
+int siov_decrypt(uint8_t *out, size_t out_len, const siov_ciphertext_t *ct,
+                const siov_user_secret_t *usr) {
+    (void)ct;
+    memset(out, 0, out_len);
+    /* Placeholder decryption. */
+    if (out_len > 0) out[0] = 0x42;
+    (void)usr;
+    return 0;
+}
